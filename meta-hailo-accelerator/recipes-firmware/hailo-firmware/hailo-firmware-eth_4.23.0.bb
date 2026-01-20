@@ -1,6 +1,6 @@
 DESCRIPTION = "hailo firmware eth \
 			   hailo8 chip firmware for using the ethernet interface (hailo_fw.bin) \
-			   the recipe copies the file to /lib/firmware/hailo/ on the target device’s root file system"
+			   the recipe copies the file to /lib/firmware/hailo/ on the target device's root file system"
 
 BASE_URI = "https://hailo-hailort.s3.eu-west-2.amazonaws.com"
 FW_AWS_DIR = "Hailo8/${PV}/FW"
@@ -14,11 +14,15 @@ LIC_FILES_CHKSUM = ""
 
 FW_PATH = "${WORKDIR}/${FW}"
 
+# Firmware must be in /lib/firmware for kernel request_firmware() to find it
+# Using base_libdir (/lib) instead of nonarch_base_libdir (/usr/lib)
+FIRMWARE_INSTALL_DIR = "${base_libdir}/firmware/hailo"
+
 do_install() {
-	# Stores hailo8_fw.bin in the rootfs under ${nonarch_base_libdir} - /usr/lib/firmware/hailo
-	install -d ${D}${nonarch_base_libdir}/firmware/hailo
-	install -m 0644 ${FW_PATH} ${D}${nonarch_base_libdir}/firmware/hailo/hailo8_fw.bin
+	# Install firmware to /lib/firmware/hailo (required path for kernel request_firmware)
+	install -d ${D}${FIRMWARE_INSTALL_DIR}
+	install -m 0644 ${FW_PATH} ${D}${FIRMWARE_INSTALL_DIR}/hailo8_fw.bin
 }
 
-# Package contents
-FILES:${PN} += "${nonarch_base_libdir}/firmware/hailo/hailo8_fw.bin"
+# Package contents - firmware in /lib/firmware/hailo
+FILES:${PN} += "${FIRMWARE_INSTALL_DIR}/hailo8_fw.bin"

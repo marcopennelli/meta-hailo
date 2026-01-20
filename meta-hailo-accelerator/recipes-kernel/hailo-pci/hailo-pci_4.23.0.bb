@@ -6,7 +6,9 @@ DESCRIPTION = "hailo pcie driver \
 LICENSE = "GPL-2.0-only"
 LIC_FILES_CHKSUM = "file://../../LICENSE;md5=39bba7d2cf0ba1036f2a6e2be52fe3f0"
 
-SRC_URI = "git://git@github.com/hailo-ai/hailort-drivers.git;protocol=https;branch=hailo8"
+SRC_URI = "git://git@github.com/hailo-ai/hailort-drivers.git;protocol=https;branch=hailo8 \
+           file://hailo_pci.conf \
+          "
 SRCREV = "ce1087bfe8132c99b41374e3128fc78612a3f492"
 
 inherit module
@@ -16,3 +18,12 @@ S = "${WORKDIR}/git/linux/pcie"
 EXTRA_OEMAKE += "KERNEL_DIR=${STAGING_KERNEL_DIR}"
 MAKE_TARGETS = "all"
 MODULES_INSTALL_TARGET = "install"
+
+# Install modprobe configuration for force_desc_page_size
+# Required for Raspberry Pi 5 and ARM64 systems with 16K page size
+do_install:append() {
+    install -d ${D}${sysconfdir}/modprobe.d
+    install -m 0644 ${WORKDIR}/hailo_pci.conf ${D}${sysconfdir}/modprobe.d/hailo_pci.conf
+}
+
+FILES:${PN} += "${sysconfdir}/modprobe.d/hailo_pci.conf"
